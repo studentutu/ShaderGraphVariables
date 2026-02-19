@@ -431,15 +431,24 @@ namespace Cyan {
 
 		public static void ShowColorPicker(Action<Color> action, Color initalColor, bool showAlpha, bool hdr) {
 			// Couldn't figure out a way to show the colour picker from UIElements, so... reflection!
-			// Show(Action<Color> colorChangedCallback, Color col, bool showAlpha = true, bool hdr = false)
-
 			if (colorPickerType == null) GetColorPickerType();
+#if UNITY_6000_3_OR_NEWER
+			// Show(Action<Color> colorChangedCallback, Color col, bool showAlpha, bool hdr, bool setAlphaIfTransparentOnNextPick)
+			if (showColorPicker == null) {
+				showColorPicker = colorPickerType.GetMethod("Show",
+					new Type[] { typeof(Action<Color>), typeof(Color), typeof(bool), typeof(bool), typeof(bool) }
+				);
+			}
+			showColorPicker.Invoke(null, new object[] { action, initalColor, showAlpha, hdr, false });
+#else
+			// Show(Action<Color> colorChangedCallback, Color col, bool showAlpha = true, bool hdr = false)
 			if (showColorPicker == null) {
 				showColorPicker = colorPickerType.GetMethod("Show",
 					new Type[] { typeof(Action<Color>), typeof(Color), typeof(bool), typeof(bool) }
 				);
 			}
 			showColorPicker.Invoke(null, new object[] { action, initalColor, showAlpha, hdr });
+#endif
 		}
 
 		static void BuildContextualMenu(ContextualMenuPopulateEvent evt) {
