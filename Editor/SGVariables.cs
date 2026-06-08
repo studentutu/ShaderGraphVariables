@@ -90,14 +90,22 @@ namespace Cyan {
 			if (isEnabled) return;
 			initTime = Time.realtimeSinceStartup;
 			EditorApplication.update += CheckForGraphs;
+			EditorApplication.playModeStateChanged += Reload;
 			Undo.undoRedoPerformed += OnUndoRedo;
 			isEnabled = true;
 		}
 
 		public static void Stop() {
 			EditorApplication.update -= CheckForGraphs;
+			EditorApplication.playModeStateChanged -= Reload;
 			Undo.undoRedoPerformed -= OnUndoRedo;
 			isEnabled = false;
+		}
+
+		private static void Reload(PlayModeStateChange state){
+			initTime = Time.realtimeSinceStartup;
+			prev = null;
+			graphView = null;
 		}
 
 		internal static EditorWindow sgWindow;
@@ -110,7 +118,7 @@ namespace Cyan {
         private static Font m_LoadedFont;// = EditorGUIUtility.LoadRequired("Fonts/Inter/Inter-Regular.ttf") as Font;
 
 		private static void CheckForGraphs() {
-			if (Time.realtimeSinceStartup < initTime + 3f) return;
+			if (Time.realtimeSinceStartup < initTime + 1f) return;
 
 			EditorWindow focusedWindow = EditorWindow.focusedWindow;
 			if (focusedWindow == null) return;
